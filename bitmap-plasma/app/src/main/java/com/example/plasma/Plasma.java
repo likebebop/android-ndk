@@ -56,7 +56,7 @@ class PlasmaView extends View {
 
     public PlasmaView(Context context, int width, int height) {
         super(context);
-        mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         mStartTime = System.currentTimeMillis();
     }
 
