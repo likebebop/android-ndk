@@ -38,7 +38,7 @@ JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * 
     u_int32_t*          pixels;
     int                ret;
 
-    unsigned char* rgbArray = nativeRgbArray;
+    unsigned char* rgbArray = (unsigned char*)nativeRgbArray;
 
     if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -59,24 +59,44 @@ JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * 
     int stride = info.width * 3;
     int size = stride * info.height;
     int idx = 0;
-    //unsigned char* image = rgbArray;
-    unsigned char* image = (unsigned char*)malloc(size);
+    unsigned char* image = rgbArray;
+    //unsigned char* image = (unsigned char*)malloc(size);
 
-    memset(image, 0xff, size);
+    //memset(image, 0xff, size);
 
-    for (int i = 0; i < info.width / 2; i++) {
-        image[stride * 799 + i * 3] = 0xff;
-        image[stride * 799 + i * 3 + 1] = 0x00;
-        image[stride * 799 + i * 3 + 2] = 0x00;
-    }
+//    for (int i = 0; i < info.width / 2; i++) {
+//        image[stride * 799 + i * 3] = 0xff;
+//        image[stride * 799 + i * 3 + 1] = 0x00;
+//        image[stride * 799 + i * 3 + 2] = 0x00;
+//    }
 
-    for (int i = 0; i < info.width * 800; i++) {
+    for (int i = 0; i < info.width * info.height; i++) {
         pixels[i] = buildAgbr(image[idx], image[idx+1], image[idx+2]);
         idx+=3;
     }
 
-    free(image);
+    //free(image);
 
     AndroidBitmap_unlockPixels(env, bitmap);
 
+}
+
+JNIEXPORT jlong JNICALL
+Java_com_example_plasma_Plasma_buildBytes(JNIEnv *env, jclass type) {
+    int width = 1080;
+    int height = 1920;
+    int stride = width * 3;
+    int size = stride * height;
+    unsigned char* image = (unsigned char*)malloc(size);
+
+    memset(image, 0xff, size);
+    for (int i = 0; i < width / 2; i++) {
+        for (int j = 750; j < 800; j++) {
+            image[stride * j + i * 3] = 0x00;
+            image[stride * j + i * 3 + 1] = 0xff;
+            image[stride * j + i * 3 + 2] = 0x00;
+        }
+    }
+
+    return image;
 }

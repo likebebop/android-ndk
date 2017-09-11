@@ -55,6 +55,9 @@ public class Plasma extends Activity
         }
     }
 
+
+
+
     public byte[] toBytes(String path) {
         AssetManager assetManager = getApplicationContext().getAssets();
         InputStream istr = null;
@@ -71,6 +74,8 @@ public class Plasma extends Activity
         }
     }
 
+    private static native long buildBytes();
+
     // Called when the activity is first created.
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -82,10 +87,10 @@ public class Plasma extends Activity
         DisplayMetrics display = getResources().getDisplayMetrics();
 
         byte[] bytes = toBytes("B612_20170911_114134.jpg");
-        //byte[] bytes1 = {};
-        long nativeRgbArray = JpegTurbo.nativeDecodeB612(bytes, 1);
 
-        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, nativeRgbArray));
+        //long nativeRgbArray = JpegTurbo.nativeDecodeB612(bytes, 1);
+        //setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, nativeRgbArray));
+        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, buildBytes()));
     }
 
     // load our native library
