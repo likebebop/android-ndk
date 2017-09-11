@@ -30,6 +30,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.linecorp.android.common.jpegturbo.JpegTurbo;
+import com.linecorp.kuru.utils.NativeImageUtils;
 
 import org.apache.commons.io.IOUtils;
 
@@ -56,8 +57,6 @@ public class Plasma extends Activity
     }
 
 
-
-
     public byte[] toBytes(String path) {
         AssetManager assetManager = getApplicationContext().getAssets();
         InputStream istr = null;
@@ -74,8 +73,7 @@ public class Plasma extends Activity
         }
     }
 
-    private static native long buildBytes();
-
+    private long nativeRgbArray;
     // Called when the activity is first created.
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -86,16 +84,19 @@ public class Plasma extends Activity
 
         DisplayMetrics display = getResources().getDisplayMetrics();
 
-        byte[] bytes = toBytes("B612_20170911_114134.jpg");
+        nativeRgbArray = NativeImageUtils.malloc(display.widthPixels * display.heightPixels * 3);
 
+        //byte[] bytes = toBytes("B612_20170911_114134.jpg");
         //long nativeRgbArray = JpegTurbo.nativeDecodeB612(bytes, 1);
         //setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, nativeRgbArray));
-        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, buildBytes()));
+        NativeImageUtils.fillTestRgb(nativeRgbArray, display.widthPixels, display.heightPixels);
+        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, nativeRgbArray));
     }
 
-    // load our native library
-    static {
-        System.loadLibrary("plasma");
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NativeImageUtils.free(nativeRgbArray);
     }
 }
 
@@ -108,9 +109,6 @@ class PlasmaView extends View {
     private Bitmap mBitmap;
     private long nativeRgbArray;
 
-    // implementend by libplasma.so
-    private static native void renderPlasma(Bitmap  bitmap, long nativeRgbArray);
-
     public PlasmaView(Context context, int width, int height, long nativeRgbArray) {
         super(context);
         this.nativeRgbArray = nativeRgbArray;
@@ -118,7 +116,7 @@ class PlasmaView extends View {
     }
 
     @Override protected void onDraw(Canvas canvas) {
-        renderPlasma(mBitmap, nativeRgbArray);
+        NativeImageUtils.renderToBitmap(mBitmap, nativeRgbArray);
         canvas.drawBitmap(mBitmap, 0, 0, null);
         // force a redraw, with a different time-based pattern.
         invalidate();
