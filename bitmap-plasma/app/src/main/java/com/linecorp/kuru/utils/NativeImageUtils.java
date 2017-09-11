@@ -18,4 +18,5 @@ public class NativeImageUtils {
     public native static void fillTestRgb(long nativeRgbArray, int width, int height);
 
     public native static byte[] rgbArrayToNv21(long nativeRgbArray, int width, int height);
+    public native static void yuvToRgb(long nativeYuvArray, long nativeRgbArray, int width, int height);
 }

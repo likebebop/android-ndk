@@ -86,7 +86,7 @@ public class Plasma extends Activity
 
         nativeRgbArray = NativeImageUtils.malloc(display.widthPixels * display.heightPixels * 3);
 
-        //byte[] bytes = toBytes("B612_20170911_114134.jpg");
+        byte[] bytes = toBytes("B612_20170911_114134.jpg");
         //long nativeRgbArray = JpegTurbo.nativeDecodeB612(bytes, 1);
         //setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, nativeRgbArray));
         NativeImageUtils.fillTestRgb(nativeRgbArray, display.widthPixels, display.heightPixels);

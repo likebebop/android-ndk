@@ -171,3 +171,46 @@ Java_com_linecorp_kuru_utils_NativeImageUtils_fillTestRgb(JNIEnv *env, jclass ty
     }
 
 }
+
+JNIEXPORT void JNICALL
+Java_com_linecorp_kuru_utils_NativeImageUtils_yuvToRgb(JNIEnv *env, jclass type,
+                                                       jlong nativeYuvArray, jlong nativeRgbArray,
+                                                       jint width, jint height) {
+    unsigned char* yuvArray = nativeYuvArray;
+    unsigned char* rgbArray = nativeRgbArray;
+
+    int y;
+    int cr;
+    int cb;
+
+    double r;
+    double g;
+    double b;
+
+    for (int i = 0; i < (width * height * RGB_COMPONENT_SIZE); i+=RGB_COMPONENT_SIZE) {
+        y = yuvArray[i] & 0xff;
+        cb = yuvArray[i+1] & 0xff;
+        cr = yuvArray[i+2] & 0xff;
+
+        r = y + (1.4065 * (cr - 128));
+        g = y - (0.3455 * (cb - 128)) - (0.7169 * (cr - 128));
+        b = y + (1.7790 * (cb - 128));
+//
+//        r = y;
+//        g = cb;
+//        b = cr;
+
+        //This prevents colour distortions in your rgb image
+        if (r < 0) r = 0;
+        else if (r > 255) r = 255;
+        if (g < 0) g = 0;
+        else if (g > 255) g = 255;
+        if (b < 0) b = 0;
+        else if (b > 255) b = 255;
+
+        rgbArray[i] = (unsigned char)r;
+        rgbArray[i+1] = (unsigned char)g;
+        rgbArray[i+2] = (unsigned char)b;
+    }
+
+}
