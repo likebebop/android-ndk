@@ -24,14 +24,6 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-
-static uint16_t  make565(int red, int green, int blue)
-{
-    return (uint16_t)( ((red   << 8) & 0xf800) |
-                       ((green << 3) & 0x07e0) |
-                       ((blue  >> 3) & 0x001f) );
-}
-
 static u_int32_t  buildAgbr(unsigned char r, unsigned char g, unsigned char b)
 {
     return (u_int32_t)( 0xff000000 |
@@ -67,6 +59,7 @@ JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * 
     int stride = info.width * 3;
     int size = stride * info.height;
     int idx = 0;
+    //unsigned char* image = rgbArray;
     unsigned char* image = (unsigned char*)malloc(size);
 
     memset(image, 0xff, size);
@@ -78,13 +71,8 @@ JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * 
     }
 
     for (int i = 0; i < info.width * 800; i++) {
-        //pixels[i] = buildAgbr(0xff, 0, 0);
-        //pixels[i] = buildAgbr(current[idx], current[idx+1], current[idx+2]);
-       // idx+=3;
-
         pixels[i] = buildAgbr(image[idx], image[idx+1], image[idx+2]);
         idx+=3;
-        //current = current + 3;
     }
 
     free(image);
