@@ -68,13 +68,14 @@ JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * 
     int size = stride * info.height;
     int idx = 0;
     unsigned char* image = (unsigned char*)malloc(size);
-    memset(image, 0, size);
+
+    memset(image, 0xff, size);
 
     for (int i = 0; i < info.width / 2; i++) {
         image[stride * 799 + i * 3] = 0xff;
+        image[stride * 799 + i * 3 + 1] = 0x00;
+        image[stride * 799 + i * 3 + 2] = 0x00;
     }
-
-    //current[stride * 799] = 0xff;
 
     for (int i = 0; i < info.width * 800; i++) {
         //pixels[i] = buildAgbr(0xff, 0, 0);
