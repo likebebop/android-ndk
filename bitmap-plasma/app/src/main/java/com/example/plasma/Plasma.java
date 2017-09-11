@@ -82,9 +82,10 @@ public class Plasma extends Activity
         DisplayMetrics display = getResources().getDisplayMetrics();
 
         byte[] bytes = toBytes("B612_20170911_114134.jpg");
-        long pointer = JpegTurbo.nativeDecodeB612(bytes, 1);
+        //byte[] bytes1 = {};
+        long nativeRgbArray = JpegTurbo.nativeDecodeB612(bytes, 1);
 
-        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels));
+        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels, nativeRgbArray));
     }
 
     // load our native library
@@ -100,19 +101,19 @@ public class Plasma extends Activity
 @SuppressLint("ViewConstructor")
 class PlasmaView extends View {
     private Bitmap mBitmap;
-    private long mStartTime;
+    private long nativeRgbArray;
 
     // implementend by libplasma.so
-    private static native void renderPlasma(Bitmap  bitmap, long time_ms);
+    private static native void renderPlasma(Bitmap  bitmap, long nativeRgbArray);
 
-    public PlasmaView(Context context, int width, int height) {
+    public PlasmaView(Context context, int width, int height, long nativeRgbArray) {
         super(context);
+        this.nativeRgbArray = nativeRgbArray;
         mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        mStartTime = System.currentTimeMillis();
     }
 
     @Override protected void onDraw(Canvas canvas) {
-        renderPlasma(mBitmap, System.currentTimeMillis() - mStartTime);
+        renderPlasma(mBitmap, nativeRgbArray);
         canvas.drawBitmap(mBitmap, 0, 0, null);
         // force a redraw, with a different time-based pattern.
         invalidate();

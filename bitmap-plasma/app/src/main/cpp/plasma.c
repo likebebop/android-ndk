@@ -18,17 +18,35 @@
 #include <time.h>
 #include <android/log.h>
 #include <android/bitmap.h>
+#include <stdlib.h>
 
 #define  LOG_TAG    "libplasma"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 
-JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * env, jobject  obj, jobject bitmap,  jlong  time_ms)
+static uint16_t  make565(int red, int green, int blue)
+{
+    return (uint16_t)( ((red   << 8) & 0xf800) |
+                       ((green << 3) & 0x07e0) |
+                       ((blue  >> 3) & 0x001f) );
+}
+
+static u_int32_t  buildAgbr(unsigned char r, unsigned char g, unsigned char b)
+{
+    return (u_int32_t)( 0xff000000 |
+                       ((b  << 16)  & 0xff0000) |
+                       ((g  << 8) & 0x00ff00) |
+                       ((r  << 0) & 0x0000ff) );
+}
+
+JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * env, jobject  obj, jobject bitmap,  jlong  nativeRgbArray)
 {
     AndroidBitmapInfo  info;
     u_int32_t*          pixels;
     int                ret;
+
+    unsigned char* rgbArray = nativeRgbArray;
 
     if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -44,11 +62,31 @@ JNIEXPORT void JNICALL Java_com_example_plasma_PlasmaView_renderPlasma(JNIEnv * 
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
 
+    //--ABGR로 저장되 있음
+    //unsigned char* current = rgbArray;
+    int stride = info.width * 3;
+    int size = stride * info.height;
+    int idx = 0;
+    unsigned char* image = (unsigned char*)malloc(size);
+    memset(image, 0, size);
 
-    for (int i = 0; i < info.width * 100; i++) {
-        pixels[i] = 0xff0000ff;
+    for (int i = 0; i < info.width / 2; i++) {
+        image[stride * 799 + i * 3] = 0xff;
     }
 
+    //current[stride * 799] = 0xff;
+
+    for (int i = 0; i < info.width * 800; i++) {
+        //pixels[i] = buildAgbr(0xff, 0, 0);
+        //pixels[i] = buildAgbr(current[idx], current[idx+1], current[idx+2]);
+       // idx+=3;
+
+        pixels[i] = buildAgbr(image[idx], image[idx+1], image[idx+2]);
+        idx+=3;
+        //current = current + 3;
+    }
+
+    free(image);
 
     AndroidBitmap_unlockPixels(env, bitmap);
 
