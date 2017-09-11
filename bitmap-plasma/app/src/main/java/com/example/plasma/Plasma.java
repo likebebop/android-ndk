@@ -17,23 +17,74 @@ package com.example.plasma;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.res.AssetManager;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.content.Context;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.view.Display;
+import android.view.Window;
 import android.view.WindowManager;
+
+import com.linecorp.android.common.jpegturbo.JpegTurbo;
+
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class Plasma extends Activity
 {
+
+    public Bitmap decodeFromAsset(String path) {
+        AssetManager assetManager = getApplicationContext().getAssets();
+        InputStream istr = null;
+        try {
+            istr = assetManager.open(path);
+            return BitmapFactory.decodeStream(istr);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            try {
+                istr.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    public byte[] toBytes(String path) {
+        AssetManager assetManager = getApplicationContext().getAssets();
+        InputStream istr = null;
+        try {
+            istr = assetManager.open(path);
+            return IOUtils.toByteArray(istr);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            try {
+                istr.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
     // Called when the activity is first created.
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        Display display = getWindowManager().getDefaultDisplay();
-        setContentView(new PlasmaView(this, display.getWidth(), display.getHeight()));
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        DisplayMetrics display = getResources().getDisplayMetrics();
+
+        byte[] bytes = toBytes("B612_20170911_114134.jpg");
+        long pointer = JpegTurbo.nativeDecodeB612(bytes, 1);
+
+        setContentView(new PlasmaView(this, display.widthPixels, display.heightPixels));
     }
 
     // load our native library
